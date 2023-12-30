@@ -1,54 +1,11 @@
-import express from 'express';
-// import mysql from 'mysql';
-import { middlewareType } from '../types/expressTypes';
-
 import {
   GraphQLInt,
-  GraphQLList,
   GraphQLObjectType,
-  GraphQLScalarType,
   GraphQLSchema,
   GraphQLString,
 } from 'graphql';
-import {
-  createUser,
-  deleteUser,
-  getAllUsers,
-  getUser,
-  updateUser,
-} from './userController';
-
-import { loginUser } from './authController';
-
-// MySQL database connection
-// const con = mysql.createConnection({
-//   host: 'localhost',
-//   port: 3306,
-//   user: 'testuser',
-//   password: 'password',
-//   database: 'test_DB',
-// });
-
-// con.connect(function (err) {
-//   if (err) throw err;
-//   console.log('Connected to test_DB!');
-// });
-
-const dbQueryCallback =
-  (resolve: any, reject: any, single = false) =>
-  (err: any, result: any) => {
-    if (err) {
-      reject(err);
-    }
-
-    if (single && result.length > 0) {
-      result = result[0];
-    } else if (single && result.length === 0) {
-      result = null;
-    }
-
-    resolve(result);
-  };
+import { createUser, deleteUser, getUser, updateUser } from './userController';
+import { loginUser, authUser } from './authController';
 
 // GraphQL Schema
 const User = new GraphQLObjectType({
@@ -59,17 +16,6 @@ const User = new GraphQLObjectType({
     email: { type: GraphQLString },
   }),
 });
-
-console.log(User);
-
-// const Thing = new GraphQLObjectType({
-//   name: 'ThingType',
-//   fields: () => ({
-//     owner_id: { type: GraphQLInt },
-//     thing_name: { type: GraphQLString },
-//     thing_id: { type: GraphQLInt },
-//   }),
-// });
 
 const DeleteType = new GraphQLObjectType({
   name: 'DeleteType',
@@ -83,44 +29,23 @@ const LoginType = new GraphQLObjectType({
   fields: () => ({
     name: { type: GraphQLString },
     email: { type: GraphQLString },
-    token: { type: GraphQLString },
   }),
 });
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    users: {
-      type: new GraphQLList(User),
-      resolve: async () => {
-        return getAllUsers();
-      },
-    },
     user: {
       type: User,
       args: {
         email: { type: GraphQLString },
       },
-      resolve(parentValue, args) {
+      resolve(_, args, context) {
+        if (!authUser(context.token, args.email)) context.res.status(401);
+
         return getUser(args.email);
       },
     },
-    // things: {
-    //   type: new GraphQLList(Thing),
-    //   resolve: async () => {
-    //     return getAllThings();
-    //   },
-    // },
-    // thing: {
-    //   type: Thing,
-    //   args: {
-    //     thing_id: { type: GraphQLInt },
-    //   },
-    //   resolve(parentValue, args) {
-    //     console.log(args);
-    //     return getThing(args.thing_id);
-    //   },
-    // },
   },
 });
 
@@ -135,7 +60,7 @@ const mutation = new GraphQLObjectType({
         password: { type: GraphQLString },
         passwordConfirm: { type: GraphQLString },
       },
-      resolve(parentValue, args) {
+      resolve(_, args) {
         return createUser(args);
       },
     },
@@ -147,7 +72,9 @@ const mutation = new GraphQLObjectType({
         password: { type: GraphQLString },
         passwordConfirm: { type: GraphQLString },
       },
-      resolve(parentValue, args) {
+      resolve(_, args, context) {
+        if (!authUser(context.token, args.email)) context.res.status(401);
+
         return updateUser(args);
       },
     },
@@ -156,8 +83,9 @@ const mutation = new GraphQLObjectType({
       args: {
         email: { type: GraphQLString },
       },
-      resolve(parentValue, args) {
-        console.log(parentValue);
+      resolve(_, args, context) {
+        if (!authUser(context.token, args.email)) context.res.status(401);
+
         return deleteUser(args.email);
       },
     },
@@ -167,9 +95,18 @@ const mutation = new GraphQLObjectType({
         email: { type: GraphQLString },
         password: { type: GraphQLString },
       },
-      resolve(parentValue, args) {
-        console.log(parentValue);
-        return loginUser(args);
+      async resolve(_, args, context) {
+        const response = await loginUser(args);
+
+        if (response) {
+          context.res.cookie('jwt', response.token, {
+            httpOnly: true,
+            //domain: 'example.com', //set your domain
+          });
+          return { email: response.email, name: response.name };
+        } else {
+          context.res.status(401);
+        }
       },
     },
   }),

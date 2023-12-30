@@ -1,26 +1,11 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import Cookies from 'js-cookie'
 
 const authStore = useAuthStore()
 
-/* import { useQuery } from '@vue/apollo-composable'
-import { gql } from '@apollo/client/core' */
-
-// const asd = useQuery(gql`
-/* const { result, loading, error } = useQuery(gql`
-  query MyQuery {
-    users {
-      email
-      id
-      name
-    }
-  }
-`)
-// console.log(asd)
-console.log(loading.value)
-console.log(error.value)
-console.log(result.value) */
+if (Cookies.get('signedin')) authStore.isLoggedIn = true
 </script>
 
 <template>
@@ -32,6 +17,7 @@ console.log(result.value) */
         <RouterLink v-if="authStore.isLoggedIn" to="/gallery">Gallery</RouterLink>
         <RouterLink v-if="!authStore.isLoggedIn" to="/login">Login</RouterLink>
         <RouterLink v-if="!authStore.isLoggedIn" to="/register">Register</RouterLink>
+        <a href="#" v-if="authStore.isLoggedIn" @click="() => authStore.logout()">Log out</a>
       </nav>
     </div>
   </header>

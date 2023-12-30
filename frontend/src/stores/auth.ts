@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { LoginCredentials } from './types'
 import apolloClient from '@/apollo-client'
+import Cookies from 'js-cookie'
 
 import router from '@/router/index'
 import { gql } from '@apollo/client/core'
@@ -11,29 +12,10 @@ export const useAuthStore = defineStore('auth', {
     isLoginError: false
   }),
   actions: {
-    async authenticate() {
-      const token = localStorage.getItem('token')
-
-      if (!token) return
-
-      const { data } = await apolloClient.mutate({
-        mutation: gql`
-                    mutation Auth {
-                      User(token: "${token}") {
-                        email
-                        name
-                      }
-                    }
-                  `
-      })
-      console.log('DATA', data)
-      if (!data.authUser) return
-
-      this.isLoggedIn = true
-    },
     async login(credentials: LoginCredentials) {
       const { email, password } = credentials
 
+      // add header credentials: 'include'?
       const { data } = await apolloClient.mutate({
         mutation: gql`
                     mutation Login {
@@ -51,13 +33,15 @@ export const useAuthStore = defineStore('auth', {
         return
       }
 
-      localStorage.setItem('token', data.loginUser.token)
+      document.cookie = 'signedin=true'
 
       this.isLoginError = false
       this.isLoggedIn = true
       router.push('/gallery')
     },
     logout() {
+      Cookies.remove('signedin')
+      Cookies.remove('jwt')
       this.isLoggedIn = false
     }
   }

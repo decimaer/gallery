@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 // import xss from "xss-clean";
 import hpp from 'hpp';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 // import userRouter from './routes/userRoutes';
 // import taskRouter from './routes/taskRoutes';
@@ -24,10 +25,13 @@ const app = express();
 // set security http headers
 // app.use(helmet());
 
+// TODO: do I need this?
 //Use cors for client side requests
-// if (!isDev) {
-//   app.use(cors());
-// }
+const corsOptions = {
+  origin: 'http://localhost:5173',
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // Dev logging
 if (isDev) {
@@ -56,6 +60,8 @@ app.use(
   })
 );
 
+app.use(cookieParser());
+
 // serving static files
 // app.use(express.static(__dirname + process.env.DIR_STATIC_FILES));
 // Routes
@@ -65,11 +71,11 @@ app.use(
 
 app.use(
   '/',
-  (req, res, next) => {
+  (_req, _res, next) => {
     console.log('graphql request');
     next();
   },
-  createYoga({ schema })
+  createYoga({ schema, cors: false })
 );
 
 // if (isDev) {

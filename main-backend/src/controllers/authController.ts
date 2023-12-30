@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 
 import jwt from 'jsonwebtoken';
 
-import * as taskController from './taskController-OLD';
 import { LoginCredentials } from './types';
 
 const signToken = (email: string) => {
@@ -37,11 +36,8 @@ export const loggedInUserResponse = async (email: string) => {
   };
 };
 
-export const authUser = async (authToken: string) => {
+export const authUser = async (token: string, email?: string) => {
   try {
-    console.log(authToken);
-    const token = authToken?.split(' ')[1];
-
     if (!token) throw new Error('You have not logged in!');
 
     const decodedToken = jwt.verify(
@@ -55,6 +51,10 @@ export const authUser = async (authToken: string) => {
 
     if (!user) throw new Error('This user is not valid.');
 
+    if (email && email !== decodedToken.email) {
+      throw new Error("You don't have permission.");
+    }
+
     return true;
   } catch (error: any) {
     console.log(error);
@@ -64,7 +64,7 @@ export const authUser = async (authToken: string) => {
 
 export const loginUser = async (credentials: LoginCredentials) => {
   try {
-    console.log(credentials);
+    console.log('CREDENTIALS', credentials);
     if (!credentials.email || !credentials.password)
       throw new Error('Wrong email or password!');
 
