@@ -7,6 +7,9 @@ import {
 import { createUser, deleteUser, getUser, updateUser } from './userController';
 import { loginUser, authUser } from './authController';
 
+// TODO: create Image type
+// TODO: create getImages query
+
 // GraphQL Schema
 const User = new GraphQLObjectType({
   name: 'UserType',
@@ -24,13 +27,13 @@ const DeleteType = new GraphQLObjectType({
   }),
 });
 
-const LoginType = new GraphQLObjectType({
-  name: 'LoginType',
-  fields: () => ({
-    name: { type: GraphQLString },
-    email: { type: GraphQLString },
-  }),
-});
+// const LoginType = new GraphQLObjectType({
+//   name: 'LoginType',
+//   fields: () => ({
+//     name: { type: GraphQLString },
+//     email: { type: GraphQLString },
+//   }),
+// });
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
@@ -39,6 +42,7 @@ const RootQuery = new GraphQLObjectType({
       type: User,
       args: {
         email: { type: GraphQLString },
+        id: { type: GraphQLInt },
       },
       resolve(_, args, context) {
         if (!authUser(context.token, args.email)) context.res.status(401);
@@ -90,7 +94,7 @@ const mutation = new GraphQLObjectType({
       },
     },
     loginUser: {
-      type: LoginType,
+      type: User,
       args: {
         email: { type: GraphQLString },
         password: { type: GraphQLString },
@@ -103,7 +107,7 @@ const mutation = new GraphQLObjectType({
             httpOnly: true,
             //domain: 'example.com', //set your domain
           });
-          return { email: response.email, name: response.name };
+          return response.user;
         } else {
           context.res.status(401);
         }

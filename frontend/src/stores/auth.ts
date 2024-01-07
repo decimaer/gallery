@@ -5,6 +5,7 @@ import Cookies from 'js-cookie'
 
 import router from '@/router/index'
 import { gql } from '@apollo/client/core'
+import { useUserStore } from './user'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -20,9 +21,9 @@ export const useAuthStore = defineStore('auth', {
         mutation: gql`
                     mutation Login {
                       loginUser(email: "${email}", password: "${password}") {
+                        id
                         email
                         name
-                        token
                       }
                     }
                   `
@@ -34,6 +35,10 @@ export const useAuthStore = defineStore('auth', {
       }
 
       document.cookie = 'signedin=true'
+      document.cookie = `email=${data.loginUser.email}`
+
+      const userStore = useUserStore()
+      userStore.user = data.loginUser
 
       this.isLoginError = false
       this.isLoggedIn = true
@@ -43,6 +48,7 @@ export const useAuthStore = defineStore('auth', {
       Cookies.remove('signedin')
       Cookies.remove('jwt')
       this.isLoggedIn = false
+      router.push('/')
     }
   }
 })

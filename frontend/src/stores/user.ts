@@ -6,6 +6,7 @@ import apolloClient from '@/apollo-client'
 
 import router from '@/router/index'
 import { gql } from '@apollo/client/core'
+import Cookies from 'js-cookie'
 
 type RegisterUser = {
   email: string
@@ -27,7 +28,7 @@ export const useUserStore = defineStore(
   // { registerUser(): void }
 > */ 'user',
   {
-    state: () => ({
+    state: (): { user: UserInfo | null } => ({
       user: null
     }),
     actions: {
@@ -47,6 +48,26 @@ export const useUserStore = defineStore(
         })
         console.log(data)
         router.push('/login')
+      },
+      async getUser() {
+        if (this.user) return
+
+        const email = Cookies.get('email')
+        if (!email) return router.push('/login')
+
+        const { data } = await apolloClient.query({
+          query: gql`
+          query getUser {
+            user(email: "${email}") {
+              email
+              id
+              name
+            }
+          }
+          `
+        })
+
+        if (data.user) this.user = data.user
       }
     }
   }

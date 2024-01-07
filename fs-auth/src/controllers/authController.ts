@@ -29,11 +29,8 @@ export const loggedInUserResponse = async (email: string) => {
 
   return {
     token,
-    user: {
-      id: user?.id,
-      email: user?.email,
-      name: user?.name,
-    },
+    email: user?.email,
+    name: user?.name,
   };
 };
 

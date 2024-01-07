@@ -7,14 +7,7 @@ import hpp from 'hpp';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-// import userRouter from './routes/userRoutes';
-// import taskRouter from './routes/taskRoutes';
-import schema from './controllers/graphqlController';
-// import { graphqlHTTP } from 'express-graphql';
-// import { createHandler } from 'graphql-http/lib/use/express';
-// import expressPlayground from 'graphql-playground-middleware-express';
-import { createYoga } from 'graphql-yoga';
-import { graphql } from 'graphql';
+import imageRouter from './routes/imageRoutes';
 
 const isDev = process.env.NODE_ENV === 'development';
 console.log(process.env.NODE_ENV);
@@ -66,16 +59,12 @@ app.use(cookieParser());
 // Routes
 // app.use('/api/users', userRouter);
 
-// app.use('/api/tasks', taskRouter);
+app.use('/images', imageRouter);
 
-app.use(
-  '/',
-  (_req, _res, next) => {
-    console.log('graphql request');
-    next();
-  },
-  createYoga({ schema, cors: false })
-);
+// app.use('/images', (_req, _res, next) => {
+//   console.log('REQUEST SENT TO IMAGES');
+//   next();
+// });
 
 // if (isDev) {
 //   app.use('/api/playground', expressPlayground({ endpoint: '/api/graphql' }));

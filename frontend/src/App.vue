@@ -2,10 +2,16 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Cookies from 'js-cookie'
+import { useUserStore } from '@/stores/user'
 
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
-if (Cookies.get('signedin')) authStore.isLoggedIn = true
+console.log('signedin', Cookies.get('signedin'))
+if (Cookies.get('signedin')) {
+  authStore.isLoggedIn = true
+  userStore.getUser()
+}
 </script>
 
 <template>
@@ -15,6 +21,7 @@ if (Cookies.get('signedin')) authStore.isLoggedIn = true
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink v-if="authStore.isLoggedIn" to="/gallery">Gallery</RouterLink>
+        <RouterLink v-if="authStore.isLoggedIn" to="/upload">Upload</RouterLink>
         <RouterLink v-if="!authStore.isLoggedIn" to="/login">Login</RouterLink>
         <RouterLink v-if="!authStore.isLoggedIn" to="/register">Register</RouterLink>
         <a href="#" v-if="authStore.isLoggedIn" @click="() => authStore.logout()">Log out</a>
