@@ -6,5 +6,5 @@ export type LoginCredentials = {
 export type ImageMetaData = {
   filename: string;
   encoding: string;
-  mimetype: string;
+  mimeType: string;
 };

@@ -27,11 +27,17 @@ router
     if (!(await authUser(req.cookies.jwt, user.email)))
       return next(res.status(401));
 
-    // TODO: uuid + filename
-    // TODO: check db for image, verify user
-    // TODO: send meta data to function below
+    const image = await prisma.image.findUnique({
+      where: {
+        id: fileId,
+      },
+    });
 
-    readFileAndSendAsStream(filePath, res);
+    if (!image) return next(res.status(404));
+
+    if (image?.userId !== user.id) return next(res.status(401));
+
+    readFileAndSendAsStream(filePath, image.mimeType, res);
   });
 
 router
@@ -52,11 +58,13 @@ router
 
       const metaData = await writeStreamToFile(req, uuid);
 
+      console.log(metaData);
+
       const newImage = await prisma.image.create({
         data: {
           id: uuid,
           fileName: metaData.filename,
-          mimeType: metaData.mimetype,
+          mimeType: metaData.mimeType,
           userId: user.id,
         },
       });

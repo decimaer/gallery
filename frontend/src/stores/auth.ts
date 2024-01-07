@@ -16,7 +16,6 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: LoginCredentials) {
       const { email, password } = credentials
 
-      // add header credentials: 'include'?
       const { data } = await apolloClient.mutate({
         mutation: gql`
                     mutation Login {

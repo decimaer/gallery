@@ -1,14 +1,13 @@
 import {
   GraphQLInt,
+  GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
 } from 'graphql';
 import { createUser, deleteUser, getUser, updateUser } from './userController';
 import { loginUser, authUser } from './authController';
-
-// TODO: create Image type
-// TODO: create getImages query
+import { getAllImages } from './imageController';
 
 // GraphQL Schema
 const User = new GraphQLObjectType({
@@ -20,6 +19,13 @@ const User = new GraphQLObjectType({
   }),
 });
 
+const Image = new GraphQLObjectType({
+  name: 'ImageType',
+  fields: () => ({
+    path: { type: GraphQLString },
+  }),
+});
+
 const DeleteType = new GraphQLObjectType({
   name: 'DeleteType',
   fields: () => ({
@@ -27,16 +33,8 @@ const DeleteType = new GraphQLObjectType({
   }),
 });
 
-// const LoginType = new GraphQLObjectType({
-//   name: 'LoginType',
-//   fields: () => ({
-//     name: { type: GraphQLString },
-//     email: { type: GraphQLString },
-//   }),
-// });
-
-const RootQuery = new GraphQLObjectType({
-  name: 'RootQueryType',
+const query = new GraphQLObjectType({
+  name: 'Query',
   fields: {
     user: {
       type: User,
@@ -48,6 +46,15 @@ const RootQuery = new GraphQLObjectType({
         if (!authUser(context.token, args.email)) context.res.status(401);
 
         return getUser(args.email);
+      },
+    },
+    images: {
+      type: new GraphQLList(Image),
+      args: {
+        userId: { type: GraphQLInt },
+      },
+      resolve(_, args, context) {
+        return getAllImages(args, context);
       },
     },
   },
@@ -117,7 +124,7 @@ const mutation = new GraphQLObjectType({
 });
 
 const schema = new GraphQLSchema({
-  query: RootQuery,
+  query,
   mutation,
 });
 

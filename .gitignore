@@ -1,5 +1,5 @@
 file-store/data
 db/data
-fs-auth/data
+file-server/data
 node-modules
 *.env

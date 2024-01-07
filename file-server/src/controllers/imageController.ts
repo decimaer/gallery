@@ -43,18 +43,23 @@ export function writeStreamToFile(
   });
 }
 
-export function readFileAndSendAsStream(filePath: string, res: Response): void {
+export function readFileAndSendAsStream(
+  filePath: string,
+  mimeType: string,
+  res: Response
+): void {
   fs.access(filePath, fs.constants.R_OK, (err) => {
     if (err) {
       // Handle file not found or permission issues
       res.status(404).send('File not found');
     } else {
       // Set appropriate headers for streaming
-      res.setHeader('Content-Type', 'application/octet-stream');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename=${encodeURIComponent(filePath)}`
-      );
+      res.setHeader('Content-Type', mimeType);
+      // res.setHeader('Content-Type', 'application/octet-stream');
+      // res.setHeader(
+      //   'Content-Disposition',
+      //   `attachment; filename=${encodeURIComponent(filePath)}`
+      // );
 
       // Create a readable stream from the file and pipe it to the response
       const fileStream = fs.createReadStream(filePath);
