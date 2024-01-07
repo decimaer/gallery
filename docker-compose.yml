@@ -21,17 +21,15 @@ services:
       - ./main-backend:/main-backend
     depends_on:
       - db
-      - fs-auth
-  fs-auth:
+      - file-server
+  file-server:
     build:
       context: .
-      dockerfile: ./fs-auth/dockerfile
+      dockerfile: ./file-server/dockerfile
     ports:
       - '8001:8000'
     volumes:
-      - ./fs-auth:/fs-auth
-    depends_on:
-      - file-store
+      - ./file-server:/file-server
   db:
     image: 'postgres'
     environment:
