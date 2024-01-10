@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:lint": "eslint .",
     "build:tsc": "tsc",
-    "start:dev": "nodemon src/server.ts",
+    "start:dev": "npx nodemon src/server.ts",
     "start:prod": "node src/server.js",
     "start:prod_pm2": "pm2 start src/server.js",
     "gen": "npx prisma generate",

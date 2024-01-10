@@ -1,16 +1,24 @@
 <script setup lang="ts">
-// TODO: fetch all images in galleryStore
-// TODO: render images
 import { useImageStore } from '@/stores/image'
 import { useUserStore } from '@/stores/user'
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+
 const imageStore = useImageStore()
 const userStore = useUserStore()
 const userId = userStore.user?.id
+const selectedImage = ref<string | null>(null)
 
 onMounted(async () => {
   await imageStore.getImages()
 })
+
+const openImageModal = (imageUrl: string) => {
+  selectedImage.value = imageUrl
+}
+
+const closeImageModal = () => {
+  selectedImage.value = null
+}
 </script>
 
 <template>
@@ -18,17 +26,62 @@ onMounted(async () => {
     <div>
       <h2>View all images</h2>
     </div>
-    <div>
-      <div>
+    <div class="image-gallery">
+      <div v-for="(image, i) in imageStore.images" :key="i" class="image-container">
         <img
-          v-for="(image, i) in imageStore.images"
-          :key="i"
           :src="`http://localhost:8001/images/${userId}/${image.path}`"
-          alt=""
+          @click="openImageModal(`http://localhost:8001/images/${userId}/${image.path}`)"
         />
       </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div v-if="selectedImage" class="image-modal" @click="closeImageModal">
+      <img :src="selectedImage" alt="Full Size Image" />
     </div>
   </main>
 </template>
 
-<style></style>
+<style scoped>
+.image-gallery {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.image-container {
+  width: 200px;
+  height: 200px;
+  margin: 10px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+}
+
+.image-container:hover {
+  transform: scale(1.1);
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-modal img {
+  max-width: 90%;
+  max-height: 90%;
+}
+</style>

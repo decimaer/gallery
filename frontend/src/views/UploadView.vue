@@ -33,10 +33,6 @@ const onSubmit = async function () {
 
   const message = await fetch(`http://localhost:8001/images/${userId}`, {
     method: 'POST',
-    /*  headers: {
-      'Content-Type': 'multipart/form-data',
-      boundary: 'hampus-test-boundary'
-    }, */
     body: formData,
     mode: 'no-cors',
     credentials: 'include'
@@ -51,7 +47,7 @@ const onSubmit = async function () {
       <form @submit.prevent="onSubmit" class="file-form">
         <label class="file-label">
           Select images and photos to upload
-          <input type="file" @change="onFileSelect" accept="image/*" multiple />
+          <input type="file" @change="onFileSelect" accept="image/*" />
         </label>
         <input type="submit" value="Upload to gallery!" />
       </form>
