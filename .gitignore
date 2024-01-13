@@ -2,4 +2,3 @@ file-store/data
 db/data
 file-server/data
 node-modules
-*.env
