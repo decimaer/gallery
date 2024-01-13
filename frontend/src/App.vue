@@ -3,21 +3,32 @@ import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Cookies from 'js-cookie'
 import { useUserStore } from '@/stores/user'
+import router from './router'
+import { onMounted } from 'vue'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 
-console.log('signedin', Cookies.get('signedin'))
-if (Cookies.get('signedin')) {
-  authStore.isLoggedIn = true
-  userStore.getUser()
-}
+onMounted(async () => {
+  console.info('signedin', Cookies.get('signedin'))
+  if (Cookies.get('signedin')) {
+    console.info('authenticating user...')
+    await userStore.getUser()
+
+    if (!userStore.user) {
+      router.push('/login')
+    }
+
+    console.info('user authenticated, logging in')
+    authStore.isLoggedIn = true
+  }
+})
 </script>
 
 <template>
   <header>
     <div class="wrapper">
-      <h1>Image Gallery</h1>
+      <h1>Gallery</h1>
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink v-if="authStore.isLoggedIn" to="/gallery">Gallery</RouterLink>
