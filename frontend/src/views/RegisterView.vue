@@ -43,7 +43,7 @@ const onSubmit = function () {
         Confirm Password
         <input type="password" v-model="passwordConfirm" />
       </label>
-      <input type="submit" value="Register & login" />
+      <input type="submit" value="Register" />
     </form>
   </div>
 </template>

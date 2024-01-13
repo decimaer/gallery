@@ -4,7 +4,8 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ./frontend/dockerfile
+      dockerfile: ./frontend/dockerfile.prod
+    image: hampushampus/gallery:frontend
     ports:
       - '5173:5173'
     depends_on:
@@ -13,6 +14,7 @@ services:
     build:
       context: .
       dockerfile: ./main-backend/dockerfile.prod
+    image: hampushampus/gallery:main-backend
     ports:
       - '8000:8000'
     depends_on:
@@ -22,6 +24,7 @@ services:
     build:
       context: .
       dockerfile: ./file-server/dockerfile.prod
+    image: hampushampus/gallery:file-server
     ports:
       - '8001:8000'
   db:

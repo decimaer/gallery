@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: hampushampus/gallery:frontend
+    ports:
+      - '5173:5173'
+  main-backend:
+    image: hampushampus/gallery:main-backend
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+      - file-server
+      - frontend
+  file-server:
+    image: hampushampus/gallery:file-server
+    ports:
+      - '8001:8000'
+  db:
+    image: 'postgres'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+    ports:
+      - '5499:5432'

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx vite --host",
-    "prod": "vite preview --port $DEFAULT_PORT",
+    "prod": "vite preview --port $PORT --host",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "npx vite preview",
     "build-only": "npx vite build",
