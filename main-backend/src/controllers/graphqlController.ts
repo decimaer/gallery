@@ -54,7 +54,16 @@ const query = new GraphQLObjectType({
         userId: { type: GraphQLInt },
       },
       resolve(_, args, context) {
-        return getAllImages(args, context);
+        try {
+          const images = getAllImages(args, context);
+
+          if (!images) throw new Error('Failed to get images');
+
+          return images;
+        } catch (error) {
+          console.error(error as Error);
+          return error;
+        }
       },
     },
   },
@@ -109,15 +118,12 @@ const mutation = new GraphQLObjectType({
       async resolve(_, args, context) {
         const response = await loginUser(args);
 
-        if (response) {
-          context.res.cookie('jwt', response.token, {
-            httpOnly: true,
-            //domain: 'example.com', //set your domain
-          });
-          return response.user;
-        } else {
-          context.res.status(401);
-        }
+        if (!response || !response.token) throw new Error('Failed to login');
+
+        context.res.cookie('jwt', response.token, {
+          httpOnly: true,
+        });
+        return response.user;
       },
     },
   }),

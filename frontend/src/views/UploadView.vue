@@ -5,8 +5,8 @@ import { type Ref, ref } from 'vue'
 const userStore = useUserStore()
 
 const files: Ref<FileList | null> = ref(null)
-// const password: Ref<string | null> = ref(null)
 const isError: Ref<boolean> = ref(false)
+const isErrorMessage: Ref<string> = ref('An error occured. Please try again.')
 
 const onFileSelect = function (e: Event) {
   console.log(e.target)
@@ -15,28 +15,34 @@ const onFileSelect = function (e: Event) {
 }
 
 const onSubmit = async function () {
-  console.log('SUBMITTING FILES')
+  isError.value = false
 
-  if (!files.value) return (isError.value = true)
+  const file = files.value?.item(0)
 
-  const formData = new FormData()
+  try {
+    if (!file) throw new Error('Enter a valid file.')
 
-  for (let i = 0; i < files.value.length; i++) {
-    const file = files.value.item(i)
-    formData.append('files', file)
+    const formData = new FormData()
+
     console.log(file)
+    formData.append('files', file)
+
+    const userId = userStore.user?.id
+
+    const response = await fetch(`http://localhost:8001/images/${userId}`, {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors',
+      credentials: 'include'
+    })
+
+    if (!response.ok)
+      throw new Error('An error occured while uploading the file. Please try again.')
+  } catch (error) {
+    console.error(error)
+    isErrorMessage.value = (error as Error).message
+    isError.value = true
   }
-
-  const userId = userStore.user?.id
-
-  console.log(userStore.user)
-
-  const message = await fetch(`http://localhost:8001/images/${userId}`, {
-    method: 'POST',
-    body: formData,
-    mode: 'no-cors',
-    credentials: 'include'
-  })
 }
 </script>
 
@@ -44,6 +50,7 @@ const onSubmit = async function () {
   <main>
     <div>
       <h2>Upload new images</h2>
+      <p v-if="isError" class="error">{{ isErrorMessage }}</p>
       <form @submit.prevent="onSubmit" class="file-form">
         <label class="file-label">
           Select images and photos to upload

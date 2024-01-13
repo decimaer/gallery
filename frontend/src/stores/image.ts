@@ -16,19 +16,27 @@ export const useImageStore = defineStore('image', {
 
       if (!userId) return router.push('/login')
 
-      const { data } = await apolloClient.query({
-        query: gql`
+      try {
+        const response = await apolloClient.query({
+          query: gql`
           query getAllImages {
             images(userId: ${userId}) {
               path
             }
           }
           `
-      })
+        })
 
-      this.images = data.images || []
+        if (response.errors)
+          response.errors.forEach((error) => {
+            throw new Error(error.message)
+          })
 
-      console.log(data)
+        console.log(response.data.images)
+        this.images = response.data.images
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 })

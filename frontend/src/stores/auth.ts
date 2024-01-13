@@ -16,8 +16,9 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: LoginCredentials) {
       const { email, password } = credentials
 
-      const { data } = await apolloClient.mutate({
-        mutation: gql`
+      try {
+        const response = await apolloClient.mutate({
+          mutation: gql`
                     mutation Login {
                       loginUser(email: "${email}", password: "${password}") {
                         id
@@ -26,26 +27,30 @@ export const useAuthStore = defineStore('auth', {
                       }
                     }
                   `
-      })
-      console.log('DATA', data)
-      if (!data.loginUser) {
+        })
+        console.log('LOGIN', response)
+        if (response.errors)
+          response.errors.forEach((error) => {
+            throw new Error(error.message)
+          })
+
+        Cookies.set('signedin', 'true')
+        Cookies.set('email', response.data.loginUser.email)
+
+        const userStore = useUserStore()
+        userStore.user = response.data.loginUser
+
+        this.isLoginError = false
+        this.isLoggedIn = true
+        router.push('/gallery')
+      } catch (error) {
         this.isLoginError = true
-        return
+        console.error(error)
       }
-
-      document.cookie = 'signedin=true'
-      document.cookie = `email=${data.loginUser.email}`
-
-      const userStore = useUserStore()
-      userStore.user = data.loginUser
-
-      this.isLoginError = false
-      this.isLoggedIn = true
-      router.push('/gallery')
     },
     logout() {
       Cookies.remove('signedin')
-      Cookies.remove('jwt')
+      Cookies.remove('email')
       this.isLoggedIn = false
       router.push('/')
     }

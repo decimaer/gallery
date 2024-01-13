@@ -14,8 +14,9 @@ export const useUserStore = defineStore('user', {
     async registerUser(user: RegisterUser) {
       const { email, username, password, passwordConfirm } = user
 
-      const { data } = await apolloClient.mutate({
-        mutation: gql`
+      try {
+        const response = await apolloClient.mutate({
+          mutation: gql`
                       mutation RegisterUser {
                         createUser(email: "${email}", name: "${username}", password: "${password}", passwordConfirm: "${passwordConfirm}") {
                           email
@@ -24,9 +25,18 @@ export const useUserStore = defineStore('user', {
                         }
                       }
                     `
-      })
-      console.log(data)
-      router.push('/login')
+        })
+        console.log('REGISTER', response)
+
+        if (response.errors)
+          response.errors.forEach((error) => {
+            throw new Error(error.message)
+          })
+
+        router.push('/login')
+      } catch (error) {
+        console.error(error)
+      }
     },
     async getUser() {
       if (this.user) return
@@ -34,8 +44,9 @@ export const useUserStore = defineStore('user', {
       const email = Cookies.get('email')
       if (!email) return router.push('/login')
 
-      const { data } = await apolloClient.query({
-        query: gql`
+      try {
+        const response = await apolloClient.query({
+          query: gql`
           query getUser {
             user(email: "${email}") {
               email
@@ -44,10 +55,18 @@ export const useUserStore = defineStore('user', {
             }
           }
           `
-      })
+        })
+        console.log('USER', this.user)
 
-      if (data.user) this.user = data.user
-      console.log('USER', this.user)
+        if (response.errors)
+          response.errors.forEach((error) => {
+            throw new Error(error.message)
+          })
+
+        this.user = response.data.user
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 })

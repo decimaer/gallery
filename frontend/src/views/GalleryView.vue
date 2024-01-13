@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { useImageStore } from '@/stores/image'
 import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
 import { ref, onMounted } from 'vue'
 
 const imageStore = useImageStore()
 const userStore = useUserStore()
 const userId = userStore.user?.id
 const selectedImage = ref<string | null>(null)
+const { images } = storeToRefs(imageStore)
 
 onMounted(async () => {
+  console.log('MOUNTED GALLERY')
   await imageStore.getImages()
 })
 
@@ -27,7 +30,8 @@ const closeImageModal = () => {
       <h2>View all images</h2>
     </div>
     <div class="image-gallery">
-      <div v-for="(image, i) in imageStore.images" :key="i" class="image-container">
+      <p v-if="!images.length">You have not uploaded any images yet.</p>
+      <div v-for="(image, i) in images" :key="i" class="image-container">
         <img
           :src="`http://localhost:8001/images/${userId}/${image.path}`"
           @click="openImageModal(`http://localhost:8001/images/${userId}/${image.path}`)"
@@ -35,7 +39,6 @@ const closeImageModal = () => {
       </div>
     </div>
 
-    <!-- Image Modal -->
     <div v-if="selectedImage" class="image-modal" @click="closeImageModal">
       <img :src="selectedImage" alt="Full Size Image" />
     </div>
