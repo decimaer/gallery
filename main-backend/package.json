@@ -6,12 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:lint": "eslint .",
-    "build:tsc": "tsc",
+    "build": "npx tsc",
     "start:dev": "npx nodemon src/server.ts",
-    "start:prod": "node src/server.js",
+    "start:prod": "npm run migrate:deploy && node src/server.js",
     "start:prod_pm2": "pm2 start src/server.js",
     "gen": "npx prisma generate",
-    "migrate": "npx prisma migrate dev"
+    "migrate": "npx prisma migrate dev",
+    "migrate:deploy": "npx prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",

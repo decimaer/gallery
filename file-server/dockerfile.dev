@@ -1,12 +1,10 @@
 FROM node:20-bookworm
 
-WORKDIR /main-backend
+WORKDIR /file-server
 
-COPY ./main-backend/package.json .
+COPY ./file-server/package.json .
 
 RUN npm install
-
-#COPY . .
 
 ARG DEFAULT_PORT=8000
 

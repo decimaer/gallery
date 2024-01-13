@@ -4,32 +4,26 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ./frontend/dockerfile.dev
+      dockerfile: ./frontend/dockerfile
     ports:
       - '5173:5173'
-    volumes:
-      - ./frontend:/frontend
     depends_on:
       - main-backend
   main-backend:
     build:
       context: .
-      dockerfile: ./main-backend/dockerfile.dev
+      dockerfile: ./main-backend/dockerfile.prod
     ports:
       - '8000:8000'
-    volumes:
-      - ./main-backend:/main-backend
     depends_on:
       - db
       - file-server
   file-server:
     build:
       context: .
-      dockerfile: ./file-server/dockerfile.dev
+      dockerfile: ./file-server/dockerfile.prod
     ports:
       - '8001:8000'
-    volumes:
-      - ./file-server:/file-server
   db:
     image: 'postgres'
     environment:
