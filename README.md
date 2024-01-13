@@ -1,4 +1,4 @@
-# Gallery
+# Gallery - a multi services gallery app
 
 ## Build & run:
 

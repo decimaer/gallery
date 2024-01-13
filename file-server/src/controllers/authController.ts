@@ -1,84 +1,52 @@
+import type { NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import prisma from '../models/db';
-import bcrypt from 'bcryptjs';
 
 import jwt from 'jsonwebtoken';
+import { AuthRequest } from './types';
 
-import { LoginCredentials } from './types';
-
-const signToken = (email: string) => {
-  console.log(process.env.JWT_EXPIRES_IN);
-  return jwt.sign({ email }, `${process.env.JWT_SECRET_KEY}`, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
-
-const comparePasswords = async function (
-  currentPassword: string,
-  originalPassword: string
+export async function authenticate(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
 ) {
-  return await bcrypt.compare(currentPassword, originalPassword);
-};
-
-// Returns for both a logged in user and for logging in a new registered user
-export const loggedInUserResponse = async (email: string) => {
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  const token = signToken(email);
-
-  return {
-    token,
-    email: user?.email,
-    name: user?.name,
-  };
-};
-
-export const authUser = async (token: string, email?: string) => {
+  const userId = Number.parseInt(req.params.userId);
   try {
-    if (!token) throw new Error('You have not logged in!');
-
-    const decodedToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY!
-    ) as jwt.JwtPayload;
-
     const user = await prisma.user.findUnique({
-      where: { email: decodedToken.email },
+      where: { id: userId },
     });
 
-    if (!user) throw new Error('This user is not valid.');
+    if (!user || !(await checkUser(req.cookies.jwt, user.email)))
+      throw new Error('User is not authorized.');
 
-    if (email && email !== decodedToken.email) {
-      throw new Error("You don't have permission.");
-    }
+    req.authorizedUserId = user.id;
 
-    return true;
+    return next();
+  } catch (error) {
+    console.error(error);
+    return next(res.status(401));
+  }
+}
+
+const checkUser = async (token: string, email?: string) => {
+  if (!token) return false;
+
+  const decodedToken = jwt.verify(
+    token,
+    process.env.JWT_SECRET_KEY!
+  ) as jwt.JwtPayload;
+
+  let user;
+  try {
+    user = await prisma.user.findUnique({
+      where: { email: decodedToken.email },
+    });
   } catch (error: any) {
     console.log(error);
     return false;
   }
-};
+  if (!user) return false;
+  if (email && email !== decodedToken.email) return false;
 
-export const loginUser = async (credentials: LoginCredentials) => {
-  try {
-    console.log('CREDENTIALS', credentials);
-    if (!credentials.email || !credentials.password)
-      throw new Error('Wrong email or password!');
-
-    const user = await prisma.user.findUnique({
-      where: { email: credentials.email },
-    });
-
-    if (
-      !user ||
-      !(await comparePasswords(credentials.password, user.password))
-    ) {
-      throw new Error('Wrong email or password!');
-    }
-
-    return await loggedInUserResponse(credentials.email);
-  } catch (error: any) {
-    console.error(error);
-  }
+  return true;
 };

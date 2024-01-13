@@ -42,10 +42,16 @@ const query = new GraphQLObjectType({
         email: { type: GraphQLString },
         id: { type: GraphQLInt },
       },
-      resolve(_, args, context) {
-        if (!authUser(context.token, args.email)) context.res.status(401);
+      async resolve(_, args, context) {
+        try {
+          if (!(await authUser(context.token, args.email)))
+            throw new Error('User not authorized.');
 
-        return getUser(args.email);
+          return getUser(args.email);
+        } catch (error) {
+          console.error(error);
+          return error;
+        }
       },
     },
     images: {
@@ -92,10 +98,16 @@ const mutation = new GraphQLObjectType({
         password: { type: GraphQLString },
         passwordConfirm: { type: GraphQLString },
       },
-      resolve(_, args, context) {
-        if (!authUser(context.token, args.email)) context.res.status(401);
+      async resolve(_, args, context) {
+        try {
+          if (!(await authUser(context.token, args.email)))
+            throw new Error('User not authorized.');
 
-        return updateUser(args);
+          return updateUser(args);
+        } catch (error) {
+          console.error(error);
+          return error;
+        }
       },
     },
     deleteUser: {
@@ -103,10 +115,16 @@ const mutation = new GraphQLObjectType({
       args: {
         email: { type: GraphQLString },
       },
-      resolve(_, args, context) {
-        if (!authUser(context.token, args.email)) context.res.status(401);
+      async resolve(_, args, context) {
+        try {
+          if (!(await authUser(context.token, args.email)))
+            throw new Error('User not authorized.');
 
-        return deleteUser(args.email);
+          return deleteUser(args.email);
+        } catch (error) {
+          console.error(error);
+          return error;
+        }
       },
     },
     loginUser: {
@@ -116,14 +134,19 @@ const mutation = new GraphQLObjectType({
         password: { type: GraphQLString },
       },
       async resolve(_, args, context) {
-        const response = await loginUser(args);
+        try {
+          const response = await loginUser(args);
 
-        if (!response || !response.token) throw new Error('Failed to login');
+          if (!response || !response.token) throw new Error('Failed to login');
 
-        context.res.cookie('jwt', response.token, {
-          httpOnly: true,
-        });
-        return response.user;
+          context.res.cookie('jwt', response.token, {
+            httpOnly: true,
+          });
+          return response.user;
+        } catch (error) {
+          console.error(error);
+          return error;
+        }
       },
     },
   }),

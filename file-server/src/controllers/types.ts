@@ -1,3 +1,5 @@
+import type { Request } from 'express';
+
 export type LoginCredentials = {
   email: string;
   password: string;
@@ -8,3 +10,5 @@ export type ImageMetaData = {
   encoding: string;
   mimeType: string;
 };
+
+export type AuthRequest = Request & { authorizedUserId?: number };

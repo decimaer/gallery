@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  frontend-dev:
+  frontend:
     build:
       context: .
       dockerfile: ./frontend/dockerfile.dev
@@ -10,8 +10,8 @@ services:
     volumes:
       - ./frontend:/frontend
     depends_on:
-      - main-backend-dev
-  main-backend-dev:
+      - main-backend
+  main-backend:
     build:
       context: .
       dockerfile: ./main-backend/dockerfile.dev
@@ -20,9 +20,9 @@ services:
     volumes:
       - ./main-backend:/main-backend
     depends_on:
-      - db-dev
-      - file-server-dev
-  file-server-dev:
+      - db
+      - file-server
+  file-server:
     build:
       context: .
       dockerfile: ./file-server/dockerfile.dev
@@ -30,7 +30,7 @@ services:
       - '8001:8000'
     volumes:
       - ./file-server:/file-server
-  db-dev:
+  db:
     image: 'postgres'
     environment:
       POSTGRES_USER: postgres
