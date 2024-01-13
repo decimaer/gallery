@@ -26,7 +26,7 @@ export async function getImage(
 
     readFile(filePath, image.mimeType, res);
   } catch (error) {
-    console.error(error);
+    console.error('Error: ', error);
     return next(res.status(404));
   }
 }
@@ -36,6 +36,8 @@ export async function createImage(
   res: Response,
   next: NextFunction
 ) {
+  let response;
+
   try {
     const uuid = uuidv4();
     const userId = req.authorizedUserId!;
@@ -55,9 +57,11 @@ export async function createImage(
       },
     });
 
-    res.status(200).send(newImage);
+    response = { path: `${newImage.id}/${newImage.fileName}` };
   } catch (error) {
     console.error('Error uploading file:', error);
     return next(res.status(500).json({ error: 'Internal Server Error' }));
   }
+
+  return next(res.status(200).json(response));
 }

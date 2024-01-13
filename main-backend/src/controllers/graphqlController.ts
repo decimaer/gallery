@@ -44,7 +44,7 @@ const query = new GraphQLObjectType({
       },
       async resolve(_, args, context) {
         try {
-          if (!(await authUser(context.token, args.email)))
+          if (!(await authUser(context.req.cookies.jwt, args.email)))
             throw new Error('User not authorized.');
 
           return getUser(args.email);
@@ -100,7 +100,7 @@ const mutation = new GraphQLObjectType({
       },
       async resolve(_, args, context) {
         try {
-          if (!(await authUser(context.token, args.email)))
+          if (!(await authUser(context.req.cookies.jwt, args.email)))
             throw new Error('User not authorized.');
 
           return updateUser(args);
@@ -117,7 +117,7 @@ const mutation = new GraphQLObjectType({
       },
       async resolve(_, args, context) {
         try {
-          if (!(await authUser(context.token, args.email)))
+          if (!(await authUser(context.req.cookies.jwt, args.email)))
             throw new Error('User not authorized.');
 
           return deleteUser(args.email);

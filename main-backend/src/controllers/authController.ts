@@ -38,29 +38,26 @@ export const loggedInUserResponse = async (email: string) => {
 };
 
 export const authUser = async (token: string, email?: string) => {
+  if (!token) return false;
+
+  const decodedToken = jwt.verify(
+    token,
+    process.env.JWT_SECRET_KEY!
+  ) as jwt.JwtPayload;
+
+  let user;
   try {
-    if (!token) throw new Error('You have not logged in!');
-
-    const decodedToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY!
-    ) as jwt.JwtPayload;
-
-    const user = await prisma.user.findUnique({
+    user = await prisma.user.findUnique({
       where: { email: decodedToken.email },
     });
-
-    if (!user) throw new Error('This user is not valid.');
-
-    if (email && email !== decodedToken.email) {
-      throw new Error("You don't have permission.");
-    }
-
-    return true;
   } catch (error: any) {
     console.log(error);
     return false;
   }
+  if (!user) return false;
+  if (email && email !== decodedToken.email) return false;
+
+  return true;
 };
 
 export const loginUser = async (credentials: LoginCredentials) => {

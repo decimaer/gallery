@@ -1,5 +1,5 @@
 import type { NextFunction } from 'express';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import prisma from '../models/db';
 
 import jwt from 'jsonwebtoken';
@@ -23,7 +23,7 @@ export async function authenticate(
 
     return next();
   } catch (error) {
-    console.error(error);
+    console.error('Error: ', error);
     return next(res.status(401));
   }
 }
@@ -42,7 +42,7 @@ const checkUser = async (token: string, email?: string) => {
       where: { email: decodedToken.email },
     });
   } catch (error: any) {
-    console.log(error);
+    console.log('Error: ', error);
     return false;
   }
   if (!user) return false;

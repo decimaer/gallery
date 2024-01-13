@@ -54,21 +54,7 @@ app.use(
 
 app.use(cookieParser());
 
-// serving static files
-// app.use(express.static(__dirname + process.env.DIR_STATIC_FILES));
-// Routes
-// app.use('/api/users', userRouter);
-
 app.use('/images', imageRouter);
-
-// app.use('/images', (_req, _res, next) => {
-//   console.log('REQUEST SENT TO IMAGES');
-//   next();
-// });
-
-// if (isDev) {
-//   app.use('/api/playground', expressPlayground({ endpoint: '/api/graphql' }));
-// }
 
 app.all('*', (req, res, next) => {
   res.status(404).json({

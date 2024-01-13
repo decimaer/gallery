@@ -56,7 +56,6 @@ export const useUserStore = defineStore('user', {
           }
           `
         })
-        console.log('USER', this.user)
 
         if (response.errors)
           response.errors.forEach((error) => {

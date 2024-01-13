@@ -23,18 +23,15 @@ const onSubmit = async function () {
     if (!file) throw new Error('Enter a valid file.')
 
     const formData = new FormData()
-
-    console.log(file)
     formData.append('files', file)
-
     const userId = userStore.user?.id
 
     const response = await fetch(`http://localhost:8001/images/${userId}`, {
       method: 'POST',
       body: formData,
-      mode: 'no-cors',
       credentials: 'include'
     })
+    await response.json()
 
     if (!response.ok)
       throw new Error('An error occured while uploading the file. Please try again.')
