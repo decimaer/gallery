@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import type { LoginCredentials } from './types'
 import apolloClient from '@/apollo-client'
 import Cookies from 'js-cookie'
@@ -9,8 +10,8 @@ import { useUserStore } from './user'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    isLoggedIn: false,
-    isLoginError: false
+    isLoggedIn: ref(false),
+    isLoginError: ref(false)
   }),
   actions: {
     async login(credentials: LoginCredentials) {
@@ -29,6 +30,7 @@ export const useAuthStore = defineStore('auth', {
                   `
         })
         console.log('LOGIN', response)
+
         if (response.errors)
           response.errors.forEach((error) => {
             throw new Error(error.message)

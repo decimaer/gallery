@@ -2,18 +2,14 @@
 import { useImageStore } from '@/stores/image'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
-const imageStore = useImageStore()
-const userStore = useUserStore()
-const userId = userStore.user?.id
+const { userId } = storeToRefs(useUserStore())
 const selectedImage = ref<string | null>(null)
-const { images } = storeToRefs(imageStore)
+const { getImages } = storeToRefs(useImageStore())
+const { fetchImages } = useImageStore()
 
-onMounted(async () => {
-  console.log('MOUNTED GALLERY')
-  await imageStore.getImages()
-})
+fetchImages()
 
 const openImageModal = (imageUrl: string) => {
   selectedImage.value = imageUrl
@@ -26,12 +22,10 @@ const closeImageModal = () => {
 
 <template>
   <main>
-    <div>
-      <h2>View all images</h2>
-    </div>
-    <div class="image-gallery">
-      <p v-if="!images.length">You have not uploaded any images yet.</p>
-      <div v-for="(image, i) in images" :key="i" class="image-container">
+    <div v-if="!userId || !getImages.length">Loading...</div>
+    <div v-if="userId" class="image-gallery">
+      <p v-if="userId && !getImages.length">Go to upload to upload new images.</p>
+      <div v-for="(image, i) in getImages" :key="i" class="image-container">
         <img
           :src="`http://localhost:8001/images/${userId}/${image.path}`"
           @click="openImageModal(`http://localhost:8001/images/${userId}/${image.path}`)"

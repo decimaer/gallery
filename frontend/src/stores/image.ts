@@ -1,39 +1,55 @@
 import { defineStore } from 'pinia'
 import { type Image } from './types'
 import { useUserStore } from './user'
-import router from '@/router'
 import apolloClient from '@/apollo-client'
 import { gql } from '@apollo/client/core'
+import { useQuery, type UseQueryReturn } from '@vue/apollo-composable'
+import { provideApolloClient } from '@vue/apollo-composable'
+
+let hasfetchedOnce = false
+
+type Query = UseQueryReturn<{ images: Image[] }, Record<string, never>>
 
 export const useImageStore = defineStore('image', {
-  state: (): { images: Image[] | [] } => ({
-    images: []
+  state: (): { query: Query | null } => ({
+    query: null
   }),
+  getters: {
+    getImages: (state) => {
+      if (!state.query) return []
+      return state.query.result?.images || []
+    }
+  },
   actions: {
-    getImages: async function () {
-      const userStore = useUserStore()
-      const userId = userStore.user?.id
+    fetchImages: async function () {
+      const { userId, getUser } = useUserStore()
 
-      if (!userId) return router.push('/login')
+      if (!userId) await getUser()
+      // Vue works in mysterious ways
+      const userId2 = useUserStore().userId
+      const finalUserId = userId || userId2
 
       try {
-        const response = await apolloClient.query({
-          query: gql`
-          query getAllImages {
-            images(userId: ${userId}) {
-              path
+        const query = provideApolloClient(apolloClient)(() =>
+          useQuery<{ images: Image[] }>(gql`
+            query getAllImages {
+              images(userId: ${finalUserId}) {
+                path
+              }
             }
-          }
-          `
-        })
+        `)
+        )
 
-        if (response.errors)
-          response.errors.forEach((error) => {
-            throw new Error(error.message)
-          })
+        // Vue works in mysterious ways
+        console.log(hasfetchedOnce)
+        if (hasfetchedOnce) {
+          console.log('refetch images')
+          await query.refetch()
+        }
 
-        console.log(response.data.images)
-        this.images = response.data.images
+        // @ts-ignore
+        this.query = query || null
+        hasfetchedOnce = true
       } catch (error) {
         console.error(error)
       }

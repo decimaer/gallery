@@ -5,11 +5,15 @@ import router from '@/router/index'
 import { gql } from '@apollo/client/core'
 import Cookies from 'js-cookie'
 import type { RegisterUser, UserInfo } from './types'
+import { ref, type Ref } from 'vue'
 
 export const useUserStore = defineStore('user', {
-  state: (): { user: UserInfo | null } => ({
-    user: null
+  state: (): { user: Ref<UserInfo | null> } => ({
+    user: ref(null)
   }),
+  getters: {
+    userId: (state) => state.user?.id
+  },
   actions: {
     async registerUser(user: RegisterUser) {
       const { email, username, password, passwordConfirm } = user
@@ -44,6 +48,8 @@ export const useUserStore = defineStore('user', {
       const email = Cookies.get('email')
       if (!email) return router.push('/login')
 
+      console.log('fetching user...')
+
       try {
         const response = await apolloClient.query({
           query: gql`
@@ -62,6 +68,7 @@ export const useUserStore = defineStore('user', {
             throw new Error(error.message)
           })
 
+        console.log(response.data.user.id)
         this.user = response.data.user
       } catch (error) {
         console.error(error)
