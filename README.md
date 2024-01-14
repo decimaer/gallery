@@ -36,7 +36,7 @@ docker compose -f docker-compose.prod-run.yml up
 
 ### File server
 
-- A service which only handles image file requests (post and get) to an authenticated user. Stores images on filesystem and meta data in database.
+- A service which only handles image file requests (post and get) from an authenticated user. Stores images on filesystem and meta data in database.
 - Node/Express
 - Prisma
 
